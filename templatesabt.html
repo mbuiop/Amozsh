@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ثبت‌نام</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-900 to-blue-500 text-white">
+    <div class="bg-white text-black p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl mb-4">ثبت‌نام</h2>
+        <form id="register-form">
+            <input type="text" name="username" placeholder="نام کاربری" class="border p-2 mb-2 w-full" required>
+            <input type="email" name="email" placeholder="ایمیل" class="border p-2 mb-2 w-full" required>
+            <input type="password" name="password" placeholder="رمز عبور" class="border p-2 mb-2 w-full" required>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">ثبت</button>
+        </form>
+        <form id="verify-form" class="hidden">
+            <input type="email" name="email" placeholder="ایمیل" class="border p-2 mb-2 w-full" required>
+            <input type="text" name="code" placeholder="کد تأیید" class="border p-2 mb-2 w-full" required>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">تأیید</button>
+        </form>
+    </div>
+    <script>
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const response = await fetch('/register', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            alert(result.message);
+            if (result.success) {
+                document.getElementById('register-form').classList.add('hidden');
+                document.getElementById('verify-form').classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('verify-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const response = await fetch('/verify', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            alert(result.message);
+            if (result.success) {
+                window.location.href = '/';
+            }
+        });
+    </script>
+</body>
+</html>
