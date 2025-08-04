@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اعلانات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-r from-blue-900 to-blue-500 text-white">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold mb-4">ارسال اعلان</h1>
+        <form method="POST">
+            <textarea name="content" placeholder="متن اعلان" class="border p-2 mb-2 w-full text-black" required></textarea>
+            <input type="url" name="link" placeholder="لینک (اختیاری)" class="border p-2 mb-2 w-full text-black">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">ارسال</button>
+        </form>
+    </div>
+</body>
+</html>
