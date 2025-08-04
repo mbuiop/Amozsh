@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ثبت سایت</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-r from-blue-900 to-blue-500 text-white">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold mb-4">ثبت سایت</h1>
+        <form id="submit-site-form" enctype="multipart/form-data">
+            <input type="text" name="site_name" placeholder="نام سایت" class="border p-2 mb-2 w-full text-black" required>
+            <textarea name="site_description" placeholder="توضیحات سایت" class="border p-2 mb-2 w-full text-black" required></textarea>
+            <input type="url" name="site_link" placeholder="لینک سایت" class="border p-2 mb-2 w-full text-black" required>
+            <input type="file" name="site_image" accept="image/*" class="border p-2 mb-2 w-full" required>
+            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">ثبت</button>
+        </form>
+        <div id="success-message" class="hidden bg-green-600 p-4 rounded mt-4">ثبت شد!</div>
+    </div>
+    <script>
+        document.getElementById('submit-site-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const response = await fetch('/submit_site', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if (result.success) {
+                document.getElementById('success-message').classList.remove('hidden');
+                e.target.reset();
+            }
+            alert(result.message);
+        });
+    </script>
+</body>
+</html>
