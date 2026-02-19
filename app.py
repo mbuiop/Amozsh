@@ -8,7 +8,7 @@ import sys
 import time
 from datetime import datetime
 
-TOKEN = "توکن_ربات_تو"
+TOKEN = "8052349235:AAFSaJmYpl359BKrJTWC8O-u-dI9r2olEOQ"
 bot = telebot.TeleBot(TOKEN)
 
 # ==================== دیتابیس ====================
