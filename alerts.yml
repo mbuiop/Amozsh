@@ -1,0 +1,47 @@
+groups:
+  - name: bot_alerts
+    rules:
+      - alert: HighCPULoad
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU load on {{ $labels.instance }}"
+          description: "CPU load is {{ $value }}% for 5 minutes"
+
+      - alert: HighMemoryLoad
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory load on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value }}% for 5 minutes"
+
+      - alert: BotDown
+        expr: sum by (bot_id) (rate(bot_requests_total[5m])) == 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Bot {{ $labels.bot_id }} is down"
+          description: "No requests for 10 minutes"
+
+      - alert: QueueLength
+        expr: rabbitmq_queue_messages > 10000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Queue length is high"
+          description: "Queue has {{ $value }} messages"
+
+      - alert: DatabaseConnections
+        expr: pg_stat_database_numbackends > 500
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connections"
+          description: "Database has {{ $value }} connections"
