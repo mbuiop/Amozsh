@@ -1,0 +1,300 @@
+version: '3.8'
+
+services:
+  # ==================== API Gateway (ورودی اصلی) ====================
+  api_gateway:
+    image: nginx:alpine
+    container_name: api_gateway
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - bot_orchestrator_1
+      - bot_orchestrator_2
+      - bot_orchestrator_3
+    networks:
+      - bot_network
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+
+  # ==================== Bot Orchestrators (مدیریت ربات‌ها) ====================
+  bot_orchestrator:
+    image: bot_orchestrator:latest
+    build:
+      context: ./services/bot_orchestrator
+      dockerfile: Dockerfile
+    environment:
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+      - RABBITMQ_HOST=rabbitmq
+      - MINIO_HOST=minio
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - bot_data:/data
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    networks:
+      - bot_network
+    deploy:
+      mode: replicated
+      replicas: 100
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+      update_config:
+        parallelism: 10
+        delay: 10s
+      restart_policy:
+        condition: any
+
+  # ==================== File Processors ====================
+  file_processor:
+    image: file_processor:latest
+    build: ./services/file_processor
+    environment:
+      - MINIO_HOST=minio
+      - REDIS_HOST=redis
+    volumes:
+      - /tmp:/tmp
+    networks:
+      - bot_network
+    deploy:
+      replicas: 50
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+
+  # ==================== Library Manager ====================
+  library_manager:
+    image: library_manager:latest
+    build: ./services/library_manager
+    environment:
+      - REDIS_HOST=redis
+      - PYPI_MIRROR=https://pypi.org/simple
+    networks:
+      - bot_network
+    deploy:
+      replicas: 20
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+
+  # ==================== Web Panel ====================
+  web_panel:
+    image: web_panel:latest
+    build: ./services/web_panel
+    environment:
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+    networks:
+      - bot_network
+    deploy:
+      replicas: 10
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+
+  # ==================== PostgreSQL Cluster ====================
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: bot_empire
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_REPLICATION: "true"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bot_network
+    deploy:
+      mode: replicated
+      replicas: 3
+      resources:
+        limits:
+          cpus: '4'
+          memory: 16G
+
+  postgres_replica:
+    image: postgres:15
+    environment:
+      POSTGRES_MASTER_HOST: postgres
+      POSTGRES_REPLICATION: "true"
+    depends_on:
+      - postgres
+    networks:
+      - bot_network
+    deploy:
+      replicas: 10
+      resources:
+        limits:
+          cpus: '2'
+          memory: 8G
+
+  # ==================== Redis Cluster ====================
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --cluster-enabled yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - bot_network
+    deploy:
+      mode: replicated
+      replicas: 30
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+
+  # ==================== RabbitMQ Cluster ====================
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_COOKIE}
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - bot_network
+    deploy:
+      mode: replicated
+      replicas: 5
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+
+  # ==================== MinIO (S3 Compatible Storage) ====================
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: ${MINIO_PASS}
+    volumes:
+      - minio_data:/data
+    networks:
+      - bot_network
+    deploy:
+      mode: replicated
+      replicas: 10
+      resources:
+        limits:
+          cpus: '4'
+          memory: 16G
+
+  # ==================== Elasticsearch (Logging) ====================
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=bot-logs
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - bot_network
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '4'
+          memory: 32G
+
+  # ==================== Kibana (Log Visualization) ====================
+  kibana:
+    image: kibana:8.11.0
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - bot_network
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+
+  # ==================== Prometheus (Monitoring) ====================
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - bot_network
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '2'
+          memory: 8G
+
+  # ==================== Grafana (Dashboard) ====================
+  grafana:
+    image: grafana/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASS}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - bot_network
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+
+  # ==================== Jaeger (Tracing) ====================
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    networks:
+      - bot_network
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+
+networks:
+  bot_network:
+    driver: overlay
+    attachable: true
+
+volumes:
+  postgres_data:
+    driver: rexray/ebs
+  redis_data:
+    driver: rexray/ebs
+  rabbitmq_data:
+    driver: rexray/ebs
+  minio_data:
+    driver: rexray/ebs
+  elasticsearch_data:
+    driver: rexray/ebs
+  prometheus_data:
+    driver: rexray/ebs
+  grafana_data:
+    driver: rexray/ebs
+  bot_data:
+    driver: rexray/ebs
