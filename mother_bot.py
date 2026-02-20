@@ -56,7 +56,7 @@ os.makedirs(LOGS_DIR, exist_ok=True)
 os.makedirs(TEMP_DIR, exist_ok=True)
 
 # ==================== توکن ربات مادر ====================
-BOT_TOKEN = os.getenv('BOT_TOKEN', '7956758689:AAH3JZ3kzBybVqPwRZ_pXlyA7Pez0n3BZ0o')
+BOT_TOKEN = os.getenv('BOT_TOKEN', '8541672444:AAF4PBn7-XqiXUgaK0arVajyZfcMWqbxSJ0')
 bot = telebot.TeleBot(BOT_TOKEN)
 bot.delete_webhook()
 
