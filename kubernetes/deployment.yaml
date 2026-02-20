@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bot-orchestrator
+  namespace: bot-empire
+spec:
+  replicas: 100
+  selector:
+    matchLabels:
+      app: bot-orchestrator
+  template:
+    metadata:
+      labels:
+        app: bot-orchestrator
+    spec:
+      containers:
+      - name: orchestrator
+        image: bot-orchestrator:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DB_HOST
+          value: postgres-service
+        - name: REDIS_HOST
+          value: redis-service
+        - name: RABBITMQ_HOST
+          value: rabbitmq-service
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bot-orchestrator-service
+  namespace: bot-empire
+spec:
+  selector:
+    app: bot-orchestrator
+  ports:
+  - port: 8000
+    targetPort: 8000
+  type: LoadBalancer
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: bot-orchestrator-hpa
+  namespace: bot-empire
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bot-orchestrator
+  minReplicas: 10
+  maxReplicas: 1000
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
