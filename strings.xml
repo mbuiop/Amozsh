@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_search">Пошук</string>
+    <string name="action_refresh">Оновити</string>
+    <string name="action_share">Поділитися</string>
+    <string name="action_close">Закрити</string>
+    <string name="action_print">Друк</string>
+    <string name="action_copy">Копіювати в буфер обміну</string>
+    <string name="action_open_browser">Відкрити в браузері</string>
+    <string name="shake_to_clear_cache">Струсніть пристрій, щоб видалити кеш</string>
+    <string-array name="device_shaken_options">
+        <item>Видалити кеш</item>
+        <item>Скасувати</item>
+    </string-array>
+    <string name="drawer_open">Відкрити панель навігації</string>
+    <string name="drawer_close">Закрити панель навігації</string>
+    <string name="search_hint">Пошук</string>
+    <string name="form_error">Не вдалося надіслати. Перевірте введені дані й повторіть спробу.</string>
+    <string name="download">Завантажити</string>
+    <string name="download_canceled">Завантаження скасовано</string>
+    <string name="download_channel_name">Завантаження файлів</string>
+    <string name="download_channel_description">Сповіщення про завантаження файлів</string>
+    <string name="download_in_progress">Триває завантаження</string>
+    <string name="download_complete">Завантаження завершено</string>
+    <string name="download_disconnected">Не вдалося встановити зʼєднання для завантаження.</string>
+    <string name="upload_camera_permission_denied">Доступ до камери відхилено</string>
+    <string name="file_handler_not_found">Не вдалося знайти застосунок для відкриття цього файлу.</string>
+    <string name="cannot_open_file_chooser">Не вдалося відкрити засіб вибору файлів для цього типу файлів.</string>
+    <string name="external_storage_explanation">Надайте доступ до фото, щоб завантажити файл.</string>
+    <string name="ssl_error_generic">Помилка встановлення зʼєднання SSL</string>
+    <string name="ssl_error_expired">Термін дії сертифіката SSL минув</string>
+    <string name="ssl_error_cert">Недійсний сертифікат SSL</string>
+    <string name="location_services_not_enabled">Щоб продовжити, увімкніть геолокацію пристрою, яка використовує службу визначення місцезнаходження Google</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Скасувати</string>
+    <string name="no_thanks">Ні, дякую</string>
+    <string name="request_permission_explanation_geolocation">Надайте дозвіл на доступ до місцезнаходження</string>
+    <string name="request_permission_explanation_storage">Надайте дозвіл на доступ до памʼяті для завантаження файлів</string>
+    <string name="starting_download">Початок завантаження</string>
+    <string name="subscriptions_activity_title">Підписки</string>
+    <string name="cleared_cache">Кеш очищено</string>
+    <string name="app_logo">Логотип застосунку</string>
+    <string name="google_service_required">Файл Google Service JSON налаштовано неправильно.</string>
+    <string name="choose_action">Виберіть дію</string>
+    <string name="app_not_installed">Застосунок не встановлено</string>
+    <string name="file_download_title">Завантаження розпочато</string>
+    <string name="file_download_finished">Файл завантажено</string>
+    <string name="file_download_finished_with_name">%1$s завантажено</string>
+    <string name="file_download_error">Помилка завантаження</string>
+    <string name="file_download_finished_gallery">Зображення збережено в Галереї</string>
+</resources>
